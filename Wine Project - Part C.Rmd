@@ -1,0 +1,202 @@
+---
+title: "Wine Project - Part C"
+author: "Kowsalya Muralidharan"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+1.  **Produce summary statistics of "residual.sugar" and use its median
+    to divide the data into two groups A and B. We want to test if
+    "density" in Group A and Group B has the same population mean.
+    Please answer the following questions.**
+
+```{r}
+Red_Wine_Data<-read.csv(file = "C:/Users/kowsa/OneDrive/Desktop/UC/ACADS/Applied Stat Methods/Wine Project/winequality-red.csv",header = T, sep=";")
+attach(Red_Wine_Data)
+
+summary(Red_Wine_Data$residual.sugar)
+```
+
+```{r}
+
+residual.sugar.group<-ifelse(residual.sugar<2.20, 0, 1)
+data.frame(residual.sugar, residual.sugar.group, density)[1:10,]
+```
+
+a.  **State the null hypothesis;**
+
+Null Hypothesis (H0): The population means of "density" in Group A and
+Group B are equal.
+
+H0: μA = μB
+
+b.  **Use visualization tools to inspect the hypothesis. Do you think
+    the hypothesis is right or not?**
+
+```{r}
+boxplot(density ~ residual.sugar.group)
+```
+
+From the boxplot, we can see that there are differences in the means of
+"density" among the groups. This indicated that there could be evidence
+against the null hypothesis. However, to conclude we need to perform
+statistical testing.
+
+c.  **What test are you going to use?**
+
+We can use T-Test to test the hypothesis.
+
+```{r}
+t.test(density ~ residual.sugar.group)
+```
+
+d.  **What is the p-value?**
+
+The p-value is \< 2.2e-16, which is very negligible compared to the
+threshold of 0.05.
+
+e.  **What is your conclusion?**
+
+I suggest that we reject the null hypothesis, indicating that there is
+evidence that the population means of "density" in the two groups are
+different. However, there is a 5% chance that we may be wrong about
+rejecting the hypothesis when it is true.
+
+f.  **Does your conclusion imply that there is an association between
+    "density" and "residual.sugar"?**
+
+Since we rejected the null hypothesis, we can say there is an
+association between density and residual sugar.
+
+2.  **Produce summary statistics of "residual.sugar" and use its 1st,
+    2nd, and 3rd quantiles to divide the data into four groups A, B, C,
+    and D. We want to test if "density" in the four groups has the same
+    population mean. Please answer the following questions.**
+
+```{r}
+summary(residual.sugar)
+
+residual.sugar.group2<-NULL
+
+for(i in 1:1599){
+if(residual.sugar[i]<=1.9) residual.sugar.group2[i]<-1
+else if(residual.sugar[i]<=2.20) residual.sugar.group2[i]<-2
+else if(residual.sugar[i]<=2.60) residual.sugar.group2[i]<-3
+else residual.sugar.group2[i]<-4
+}
+table(residual.sugar.group2)
+```
+
+a.  **State the null hypothesis;**
+
+The null hypothesis (H0) is that the population means of "density" in
+all four groups are equal:
+
+H0: μA = μB = μC = μD
+
+b.  **Use visualization tools to inspect the hypothesis. Do you think
+    the hypothesis is right or not?**
+
+```{r}
+boxplot(density ~ residual.sugar.group2)
+```
+
+From the boxplot, we can see that there are differences in the means of
+"density" among the groups. This indicated that there could be evidence
+against the null hypothesis.
+
+c.  **What test are you going to use?**
+
+To test if the population means of "density" in the four groups are the
+same, we can use ANOVA test.
+
+```{r}
+summary(aov(density ~ residual.sugar.group2))
+```
+
+d.  **What is the p-value?**
+
+The p-value is \<2e-16, which is negligible compared to the threshold of
+0.05.
+
+e.  **What is your conclusion?**
+
+A very small p-value means that there are significant differences in the
+means of the groups with context to residual.sugar.
+
+Given this very small p-value, we would typically reject the null
+hypothesis (H0) that the population means of "density" are the same
+across the groups.
+
+f.  **Does your conclusion imply that there is an association between
+    "density" and "residual.sugar"? Compare your result here with that
+    in Question 1. Do you think increasing the number of groups help
+    identify the association? Would you consider dividing the data into
+    10 groups so as to help the discovery of the association? Why?**
+
+By rejecting the null hypothesis, we can conclude that there are
+differences in means among the groups, and that there is association
+between "density" and "residual.sugar." This was similar to the case in
+Question 1, and both the p-values are close.
+
+Increasing the data into 10 groups will help with figuring out more
+nuanced differences in means within different segments of the data, but
+it will still point to the same conclusion derived above.
+
+3.  **Create a 2 by 4 contingency table using the categories A, B, C, D
+    of "residual.sugar" and the binary variable "excellent" you created
+    in Part B. Note that you have two factors: the categorical levels of
+    "residual.sugar" (A, B, C and D) and an indicator of excellent
+    wines(yes or no).**
+
+```{r}
+Red_Wine_Data$excellent<- ifelse(Red_Wine_Data$quality>=7,1,0)
+
+contingency_table <- table(residual.sugar.group2, Red_Wine_Data$excellent)
+
+# Rename rows and columns for clarity
+rownames(contingency_table) <- c("A", "B", "C", "D")
+colnames(contingency_table) <- c("Not Excellent", "Excellent")
+
+# Print the contingency table
+contingency_table
+```
+
+a.  **Use the Chi-square test to test if these two factors are
+    correlated or not;**
+
+```{r}
+Xsq <- chisq.test(contingency_table)
+Xsq$observed # observed counts (same as M)
+Xsq$expected # expected counts under the null
+Xsq$residuals # Pearson residuals
+
+Xsq
+```
+
+Here, the p-value is 0.1386 \> 0.05 (threshold), which means that there
+is no strong evidence to overthrow the hypothesis, suggesting that there
+is no significant association.
+
+b.  **Use the permutation test to do the same and compare the result to
+    that in (a);**
+
+```{r}
+chisq.test(contingency_table,simulate.p.value = T)
+```
+
+Here, we can see that the p-value is 0.1409, which is also greater than
+the threshold 0.05. There is no strong statistical evidence to conclude
+that there is a significant association between "residual.sugar"
+categories and the "excellent" wines.
+
+c.  **Can you conclude that "residual.sugar" is a significant factor
+    contributing to the excellence of wine? Why?**
+
+No, we cannot conclude that residual sugar is a significant factor as
+both in the chi-squared and permutation test, we got a p-value \> 0.05,
+so we do not have enough evidence to suggest that the two factors are
+correlated or associated with each other. In other words, the null
+hypothesis is true.

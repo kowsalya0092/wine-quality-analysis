@@ -1,0 +1,420 @@
+---
+title: "Wine Quality Project - Part A"
+author: "Kowsalya Muralidharan"
+output:
+  html_document: 
+    theme: readable
+    fig_width: 8
+  word_document: default
+  pdf_document: default
+---
+
+*Study each of the variables using the techniques you have learned from Lecture 1. In particular,we are trying to answer the following questions:\
+a. What is the sample size?\
+b. Any outliers? Do you have any concerns about the data quality?\
+c. How can you summarize the data of each variable in a concise way? What statistics are\
+you going to present?\
+d. How can you visualize the distribution of each variable?\
+e. Do you see any skewed distributions?*
+
+#### **Installing necessary packages**
+
+```         
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("Hmisc")
+library(dplyr)
+library(ggplot2)
+install.packages("tidyr")
+library(tidyr)
+```
+
+#### **Importing Red Wine Data**
+
+```{r}
+Red_Wine_Data<-read.csv(file = "C:/Users/kowsa/OneDrive/Desktop/UC/ACADS/Applied Stat Methods/winequality-red.csv",header = T, sep=";")
+attach(Red_Wine_Data)
+
+```
+
+#### **Summary of variables**
+
+```{r}
+summary(Red_Wine_Data)
+sapply(Red_Wine_Data,anyNA)
+```
+
+**Observations from summary:**
+
+1.  The data set contains 1599 observations/sample size
+2.  Most of the variables have outliers because the maximum value is way higher than the 3rd Quartile
+3.  None of the variables have any missing values
+4.  There are no wines that have quality \< 3 and quality \> 8
+
+### **UNIVARIATE PLOTS**
+
+1.  **Fixed Acidity**
+
+-   Upon calculation, 74% of the data falls within 1 standard deviation (The target coverage for one standard deviation is 68%).
+-   The quantile range shows that more than 50% of the wines have a fixed acidity greater than 7.9 g/dm^3^
+-   From the histogram, we can see an almost normal distribution with slight skewness towards the right. The maximum value is way higher when compared to the mean, so further analysis is required on how this will affect data quality.
+-   From the boxplot, we can see the presence of outliers beyond 14 g/dm^3^, and a stream of data points implying skewness
+
+```{r}
+
+summary(fixed.acidity)
+lower_end_1sd<- mean(fixed.acidity)-1*sd(fixed.acidity) ### Lower end
+upper_end_1sd<- mean(fixed.acidity)+1*sd(fixed.acidity) ### Upper end
+
+sum((fixed.acidity>lower_end_1sd & fixed.acidity<upper_end_1sd)==TRUE)/1599 ###Coverage of 1 SD
+
+par(mfrow=c(1,2))
+hist(fixed.acidity)
+quantile(fixed.acidity, p=c(0.1,0.25,0.5,0.75,0.9))
+boxplot(Red_Wine_Data$fixed.acidity,
+        main = "Boxplot of Fixed Acidity",
+        ylab = "Count",
+        outline = TRUE,
+        col="#722F37",
+        boxwex=0.5)
+```
+
+2.  **Volatile Acidity**
+
+-   Upon calculation, 69.4% of the data falls within 1 standard deviation (The target coverage for one standard deviation is 68%). Around 96.5% of the data falls within 2 standard deviation.
+
+-   The quantile range shows that more than 50% of the wines have a volatile acidity greater than 0.520 g/dm^3^
+
+-   From the histogram, we can see an almost normal distribution with mean and median values being nearly equal. However, there is a small tail on the right side of the plot.
+
+-   From the boxplot, we can see the presence of an outlier greater than 1.25 g/dm^3^
+
+```{r}
+    summary(volatile.acidity)
+
+    mean(volatile.acidity)-1*sd(volatile.acidity) ### Lower end
+    mean(volatile.acidity)+1*sd(volatile.acidity) ### Upper end
+
+    mean(volatile.acidity)-2*sd(volatile.acidity) ### Lower end
+    mean(volatile.acidity)+2*sd(volatile.acidity) ### Upper end
+
+    sum((volatile.acidity>0.17 & volatile.acidity<0.89)==TRUE)/1599 ###Coverage for 1 SD
+    sum((volatile.acidity>0.35 & volatile.acidity<0.71)==TRUE)/1599 ###Coverage for 2 SD
+par(mfrow=c(1,2))
+    hist(volatile.acidity)
+    quantile(volatile.acidity, p=c(0.1,0.25,0.5,0.75,0.9))
+    
+boxplot(Red_Wine_Data$volatile.acidity,
+        main = "Boxplot of Volatile Acidity",
+        ylab = "Count",
+        outline = TRUE,
+        col="#722F37",
+        boxwex=0.5,
+        outwex=15)
+```
+
+3.  **Citric Acid**
+
+-   Upon calculation, around 96.93% of the data falls within 2 standard deviation.
+
+-   The quantile range shows that 75% of the wines have citric acid concentration lesser than 0.420 g/dm^3^
+
+-   From the histogram, it is hard to say about the type of distribution. There is a peak between 0-0.1 g/dm^3^ and consequent peaks at different intervals.
+
+-   From the boxplot, we can see the presence of an outlier at 1 g/dm^3^
+
+```{r}
+    summary(citric.acid)
+
+    mean(citric.acid)-1*sd(citric.acid) ### Lower end
+    mean(citric.acid)+1*sd(citric.acid) ### Upper end
+
+    mean(citric.acid)-2*sd(citric.acid) ### Lower end
+    mean(citric.acid)+2*sd(citric.acid) ### Upper end
+
+    sum((citric.acid>0.07 & citric.acid<0.47)==TRUE)/1599 ###Coverage of 1 SD
+    sum((citric.acid>-0.11 & citric.acid<0.66)==TRUE)/1599 ###Coverage of 2SD
+par(mfrow=c(1,2))
+
+    hist(citric.acid)
+    quantile(citric.acid, p=c(0.1,0.25,0.5,0.75,0.9))
+
+boxplot(Red_Wine_Data$citric.acid,
+        main = "Boxplot of Citric Acid",
+        ylab = "Count",
+        outline = TRUE,
+        col="#722F37",
+        boxwex=0.5)
+
+```
+
+4.  **Residual Sugar**
+
+-   Upon calculation, around 95.3% of the data falls within 2 standard deviation
+-   The quantile range shows that 75% of the wines have residual sugar concentration lesser than 2.6 g/dm^3^
+-   The right side of the plot has a very long tail and we can infer that 25% of the wines have residual sugar between 2.6 and 15.5 g/dm^3^
+-   From the boxplot, we can see the presence of a outliers and stream of data suggesting skewness
+
+```{r}
+summary(residual.sugar)
+
+mean(residual.sugar)-2*sd(residual.sugar) ### Lower end
+mean(residual.sugar)+2*sd(residual.sugar) ### Upper end
+
+sum((residual.sugar>-0.28 & residual.sugar<5.35)==TRUE)/1599 ###Coverage of 2 SD
+par(mfrow=c(1,2))
+hist(residual.sugar)
+quantile(residual.sugar, p=c(0.1,0.25,0.5,0.75,0.9))
+boxplot(Red_Wine_Data$residual.sugar,
+        main = "Boxplot of Residual Sugar",
+        ylab = "Count",
+        outline = TRUE,
+        col="#722F37",
+        boxwex=0.5,
+        horizontal=TRUE)
+```
+
+5.  **Chlorides**
+
+-   Upon calculation, we can see that around 97.19% of the data falls within 2 standard deviation
+
+-   The plot seems to be normally distributed with the right side of the plot having a very long tail. This corresponds to less than 25% of the data because the 3^rd^ quartile is of 0.090 g/dm^3^
+
+-   From the boxplot we can see the presence of outlier close to 0, as well as greater than 0.6 g/dm^3^
+
+```{r my_boxplot, fig.height=6}
+    summary(chlorides)
+
+    mean(chlorides)-2*sd(chlorides) ### Lower end
+    mean(chlorides)+2*sd(chlorides) ### Upper end
+
+    sum((chlorides>-0.0066 & chlorides<0.18)==TRUE)/1599 ###Coverage of 2 SD
+
+    par(mfrow=c(1,2))
+    hist(chlorides)
+    quantile(chlorides, p=c(0.1,0.25,0.5,0.75,0.9))
+
+  
+    boxplot(Red_Wine_Data$chlorides,
+            main = "Boxplot of Chlorides",
+            xlab = "Count",
+            outline = TRUE,
+            col="#722F37",
+            boxwex=0.7
+            )
+
+```
+
+6.  **Free Sulfur Dioxide**
+
+-   Upon calculation, we can see that around 95.9% of the data falls within 2 standard deviation
+
+-   The values are of integer type
+
+-   We can see a right skewed distribution, with 75% of the values below 21 g/dm^3^
+
+-   From the boxplot we can see the presence of outliers around 65-72 g/dm^3^
+
+```{r}
+    summary(free.sulfur.dioxide)
+
+    mean(free.sulfur.dioxide)-2*sd(free.sulfur.dioxide) ### Lower end
+    mean(free.sulfur.dioxide)+2*sd(free.sulfur.dioxide) ### Upper end
+
+    sum((free.sulfur.dioxide>-5.046 & free.sulfur.dioxide<36.8)==TRUE)/1599 ###Coverage of 2 SD
+
+par(mfrow=c(1,2))
+    hist(free.sulfur.dioxide)
+    quantile(free.sulfur.dioxide, p=c(0.1,0.25,0.5,0.75,0.9))
+
+    boxplot(Red_Wine_Data$free.sulfur.dioxide,
+            main = "Boxplot of Free Sulfur Dioxide",
+            xlab = "Count",
+            outline = TRUE,
+            col="#722F37",
+            boxwex=1,
+            horizontal=TRUE)
+
+
+```
+
+7.  **Total Sulfur Dioxide**
+
+-   Upon calculation, we can see that around 95% of the data falls within 2 standard deviation
+
+-   The values are of integer type
+
+-   We can see a right skewed distribution, with 75% of the values below 62 mg/dm^3^
+
+-   From the boxplot we can see the presence of outliers between 250-300 mg/dm^3^
+
+-   The maximum value of total sulfur dioxide is interesting and could significantly affect data quality
+
+```{r}
+    summary(total.sulfur.dioxide)
+
+    mean(total.sulfur.dioxide)-2*sd(total.sulfur.dioxide) ### Lower end
+    mean(total.sulfur.dioxide)+2*sd(total.sulfur.dioxide) ### Upper end
+
+    sum((total.sulfur.dioxide>-19.32 & total.sulfur.dioxide<112.2)==TRUE)/1599
+
+par(mfrow=c(1,2))
+    hist(total.sulfur.dioxide)
+    quantile(total.sulfur.dioxide, p=c(0.1,0.25,0.5,0.75,0.9))
+    
+    boxplot(Red_Wine_Data$total.sulfur.dioxide,
+            main = "Boxplot of Total Sulfur Dioxide",
+            xlab = "Count",
+            outline = TRUE,
+            col="#722F37",
+            boxwex=1,
+            horizontal=TRUE)
+
+```
+
+8.  **Density**
+
+-   Upon calculation, we can see that around 95% of the data falls within 2 standard deviation
+
+-   We can see a normal distribution, with mean and median being almost equal. 75% of the data is lesser than 0.997 g/cm^3^. The standard deviation for this variable is less, indicating less deviation among the wine samples.
+
+-   From the boxplot we can see the presence of few outliers
+
+```{r}
+    summary(density)
+
+    mean(density)-2*sd(density) ### Lower end
+    mean(density)+2*sd(density) ### Upper end
+
+    sum((density>0.99 & density<1)==TRUE)/1599 ###Coverage of 2 SD
+
+par(mfrow=c(1,2))
+    hist(density)
+    quantile(density, p=c(0.1,0.25,0.5,0.75,0.9))
+    sd(density)
+
+    boxplot(Red_Wine_Data$density,
+            main = "Boxplot of Density",
+            xlab = "Count",
+            outline = TRUE,
+            col="#722F37",
+            boxwex=1,
+            horizontal=TRUE)
+```
+
+9.  **pH**
+
+-   Upon calculation, we can see that around 95% of the data falls within 2 standard deviation
+-   We can see a normal distribution, with mean and median being almost equal. 75% of the data have pH value lesser than 3.40 . The standard deviation for this variable is less, indicating less deviation of pH among the wine samples.
+-   From the boxplot we can see the presence of few outliers. Very few wines have pH greater than 3.8
+
+```{r}
+    summary(pH)
+
+    mean(pH)-2*sd(pH) ### Lower end
+    mean(pH)+2*sd(pH) ### Upper end
+
+    sum((pH>3.002 & pH<3.619)==TRUE)/1599 ###Coverage of 2 SD
+
+par(mfrow=c(1,2))
+    hist(pH)
+    quantile(pH, p=c(0.1,0.25,0.5,0.75,0.9))
+    sd(pH)
+        boxplot(Red_Wine_Data$pH,
+                main = "Boxplot of pH",
+                xlab = "Count",
+                outline = TRUE,
+                col="#722F37",
+                boxwex=1,
+                horizontal=TRUE)
+
+```
+
+10. **Sulphates**
+
+-   Upon calculation, we can see that around 96.3% of the data falls within 2 standard deviation
+-   We can see a right skewed distribution. 75% of the data have sulphate value lesser than 0.73 g/dm^3^.
+-   From the boxplot we can see the presence of few outliers above 1.5 g/dm^3^
+
+```{r}
+    summary(sulphates)
+
+    mean(sulphates)-2*sd(sulphates) ### Lower end
+    mean(sulphates)+2*sd(sulphates) ### Upper end
+
+    sum((sulphates>0.32 & sulphates<1)==TRUE)/1599 ###Coverage of 2 SD
+
+par(mfrow=c(1,2))
+    hist(sulphates)
+    quantile(sulphates, p=c(0.1,0.25,0.5,0.75,0.9))
+    sd(sulphates)
+    boxplot(Red_Wine_Data$sulphates,
+            main = "Boxplot of Sulphates",
+            xlab = "Count",
+            outline = TRUE,
+            col="#722F37",
+            boxwex=1,
+            horizontal=TRUE)
+```
+
+11. **Alcohol**
+
+-   Upon calculation, we can see that around 95.6% of the data falls within 2 standard deviation
+
+-   We can see a right skewed distribution. In general, red vinho verde is said to have an alcohol content of 8-12%, so it is interesting to note that most values fall in the range 9.5 - 11.10%.
+
+-   From the boxplot we can see the presence of few outliers above 14%
+
+```{r}
+    summary(alcohol)
+
+    mean(alcohol)-2*sd(alcohol) ### Lower end
+    mean(alcohol)+2*sd(alcohol) ### Upper end
+
+    sum((alcohol>8.3 & alcohol<12.55)==TRUE)/1599 ###Coverage of 2 SD
+
+    par(mfrow=c(1,2))
+    hist(alcohol)
+    quantile(alcohol, p=c(0.1,0.25,0.5,0.75,0.9))
+    sd(alcohol)
+    
+    boxplot(Red_Wine_Data$alcohol,
+            main = "Boxplot of Alcohol",
+            xlab = "Count",
+            outline = TRUE,
+            col="#722F37",
+            boxwex=1,
+            horizontal=TRUE)
+```
+
+12. **Quality**
+
+-   Upon calculation, we can see that around 82.5% of the data falls within 1 standard deviation and 95% of the data falls within 2 standard deviation
+
+-   We can see a normal distribution with an average wine quality of 5.63. Most wines have ratings between 5-6, with worst being 3 and maximum being 8. In my opinion, the data set would need to include wine data set with qualities below 3 and above 8 to get better data insights.
+
+-   From the boxplot we can see the presence of outliers at 3 and 8
+
+```{r}
+    summary(quality)
+
+    mean(quality)-1*sd(quality) ### Lower end
+    mean(quality)+1*sd(quality) ### Upper end
+
+    mean(quality)-2*sd(quality) ### Lower end
+    mean(quality)+2*sd(quality) ### Upper end
+
+    sum((quality>4.82 & quality<6.44)==TRUE)/1599 ###Coverage of 1 SD
+    sum((quality>4.02 & quality<7.25)==TRUE)/1599 ###Coverage of 2 SD
+
+    par(mfrow=c(1,2))
+    hist(quality)
+    quantile(quality, p=c(0.1,0.25,0.5,0.75,0.9))
+    sd(quality)
+
+boxplot(Red_Wine_Data$quality,
+        main = "Boxplot of Quality",
+        ylab = "Count",
+        col="#722F37",
+        boxwex=0.5)
+```
